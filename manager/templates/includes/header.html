@@ -1,0 +1,35 @@
+{% load static %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/header.css' %}" />
+{% endblock %}
+
+<header class="header">
+  <nav class="header__nav">
+    <img
+      src="{% static 'Большая пачка.png' %}"
+      alt="лого Большая пачка"
+      class="header__logo"
+    />
+
+    {% if user.is_authenticated %}
+    <div class="header__user">
+      <a href="#" class="active">Товары</a>
+      <a href="#">Поставщики</a>
+      <a href="#">Заказы</a>
+      <a href="#">Отчёты</a>
+      <span class="header__greeting"
+        >Привет, {{ user.get_full_name|default:user.username }}</span
+      >
+      <form method="post" action="{% url 'logout' %}" class="header__form">
+        {% csrf_token %}
+        <button type="submit" class="header__btn header__btn--logout">
+          Выйти
+        </button>
+      </form>
+    </div>
+    {% elif request.resolver_match.url_name != 'login' %}
+    <a href="{% url 'login' %}" class="header__btn header__btn--login">
+      Войти
+    </a>
+    {% endif %}
+  </nav>
+</header>

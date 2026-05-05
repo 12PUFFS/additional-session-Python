@@ -12,4 +12,4 @@ admin.site.register(Materialsupplier)
 
 admin.site.unregister(Group)
 
-# Register your models here.
+

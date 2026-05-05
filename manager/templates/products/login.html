@@ -1,0 +1,33 @@
+{% extends "base.html" %} {% load static %} {% block title %}Вход в систему{%
+endblock %} {% block extra_css %}
+
+<link rel="stylesheet" href="{% static 'css/login.css' %}" />
+<link rel="stylesheet" href="{% static 'css/base.css' %}" />
+{% endblock %} {% block content %}
+<div class="login">
+  <div class="login__card">
+    <h1 class="login__title">Вход</h1>
+    <form method="post" class="login__form">
+      {% csrf_token %}
+      <label for="username" class="login__label">Логин (email):</label>
+      <input type="text" name="username" id="username" class="login__input" />
+
+      <label for="password" class="login__label">Пароль</label>
+      <input
+        type="password"
+        name="password"
+        id="password"
+        class="login__input"
+      />
+      <button type="submit" class="login__btn">Войти в учетную запись</button>
+    </form>
+
+    {% if form.errors %}
+    <p class="login__error">Неверный логин или пароль</p>
+    {% endif %}
+    <div>
+      <a href="/products">Войти без авторизации</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

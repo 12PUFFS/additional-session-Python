@@ -153,7 +153,7 @@ class MaterialsK(models.Model):
     id = models.IntegerField(primary_key=True, verbose_name='ID')
     material_names = models.ForeignKey(Material, models.DO_NOTHING, db_column='material_names', verbose_name='материал')
     type_of_material = models.ForeignKey(MaterialType, models.DO_NOTHING, db_column='type_of_material', verbose_name='тип материала')
-    photo = models.CharField(max_length=500, verbose_name='изображение')
+    photo = models.ImageField(upload_to ='materials', blank=True, null=True,verbose_name='изображение')
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='цена')
     quantity_in_stock = models.CharField(max_length=50, verbose_name='количество на складе')
     min_quantity = models.IntegerField(verbose_name='минимальное количество')
