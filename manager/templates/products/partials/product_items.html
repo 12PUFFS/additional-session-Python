@@ -1,0 +1,32 @@
+<ul class="product_list">
+  {% for item in page_obj %}
+  <li
+    class="product_item"
+    style="background-color: {% if item.quantity_in_stock < item.min_quantity %}#f19292{% elif item.quantity_in_stock >= item.min_quantity * 3 %}#ffba01{% else %}white{% endif %};"
+  >
+    <div class="img-block">
+      {% if item.photo %}
+      <img src="{{ item.photo.url }}" alt="photo" />
+      {% else %}
+      <img src="{% static 'picture.png' %}" alt="no photo" />
+      {% endif %}
+    </div>
+    <div class="info">
+      <h3>{{ item.material_names }}</h3>
+      <p>Тип: {{ item.type_of_material }}</p>
+      <p>Остаток: {{ item.quantity_in_stock }} {{ item.units }}</p>
+      <p>Цена: {{ item.price }} руб.</p>
+      <p>Мин. запас: {{ item.min_quantity }}</p>
+
+      <!-- Поставщики этого материала -->
+      <p>
+        Поставщики: {% for link in item.materialsupplierlink_set.all %} {{
+        link.provider.provider_name }}{% if not forloop.last %}, {% endif %} {%
+        empty %} Нет данных {% endfor %}
+      </p>
+    </div>
+  </li>
+  {% empty %}
+  <li>Ничего не найдено</li>
+  {% endfor %}
+</ul>

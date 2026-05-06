@@ -1,31 +1,75 @@
 {% load static %}
 
-<ul class='product_list container'>
-    {% for item in products|slice:":15" %} 
-    <li class='product_items'>
-        <div class='left_side'>
-            {% if item.photo and item.photo != 'отсутствует' and item.photo != 'не указано' and item.photo != 'нет' %}
-                <img class='is_img' src='{{item.photo.url}}' alt="фото товара">
-            {% else %}
-                <img class='empty_img' src='{% static 'picture.png' %}' alt="фото товара">
-            {% endif %}
-            <div class='desc'>
-               <p>{{item.type_of_material}} | {{item.material_names}}</p>
-               <p>Минимальное количество: {{ item.min_quantity }} шт</p>
-               <p>
-               {% for provider in supplier %}            
-                   {% if provider.materials_name_id == item.material_names_id %}
-                     {{ provider.providers_name.provider_name }}{% if not forloop.last %}, {% endif %}
-                   {% endif %}
-               {% endfor %}
-               </p>
+<div class="results-info" style="margin-bottom: 15px;">
+    Выведено: {{ current_count }} из {{ total_count }}
+</div>
+
+{% for item in page_obj %}
+<div class="product-card {% if item.is_low_stock %}low-stock{% elif item.is_overstocked %}overstock{% endif %}">
+    <div class="checkbox-item">
+        <input type="checkbox" class="material-checkbox" value="{{ item.id }}">
+    </div>
+    
+    <div>
+        {% if item.photo %}
+            <img class="product-image" src="{{ item.photo.url }}" alt="фото">
+        {% else %}
+            <img class="product-image" src="{% static 'picture.png' %}" alt="нет фото">
+        {% endif %}
+    </div>
+    
+    <div class="product-info">
+        <div class="product-header">
+            <div class="product-title">
+                {{ item.type_of_material }} | {{ item.material_names }}
+            </div>
+            <div class="stock-info">
+                Остаток: {{ item.quantity_in_stock }} шт
             </div>
         </div>
-        <div class='counter'>
-            {{item.min_quantity}} {{item.units}}
+        
+        <div class="product-details">
+            <p>Минимальное количество: {{ item.min_quantity }} шт</p>
+            
+            <div class="suppliers-list">
+                <strong>Поставщики:</strong> 
+                {% for link in supplier %}
+                    {% if link.materials_name_id == item.material_names_id %}
+                        {{ link.providers_name.provider_name }}{% if not forloop.last %}, {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
-    </li>
-    {% empty %}
-    <li>Товары не найдены</li>
+        
+        <div class="action-buttons">
+            <a href="{% url 'products:material_update' item.id %}" class="btn btn-warning">Редактировать</a>
+            <a href="{% url 'products:material_delete' item.id %}" class="btn btn-danger">Удалить</a>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="product-card">
+    <p>Товары не найдены</p>
+</div>
+{% endfor %}
+
+<!-- Pagination -->
+{% if page_obj.paginator.num_pages > 1 %}
+<ul class="pagination">
+    {% if page_obj.has_previous %}
+        <li><a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&type={{ current_type }}&sort={{ sort_order }}">&lt;</a></li>
+    {% endif %}
+    
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <li><span class="active">{{ num }}</span></li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li><a href="?page={{ num }}&search={{ search_query }}&type={{ current_type }}&sort={{ sort_order }}">{{ num }}</a></li>
+        {% endif %}
     {% endfor %}
+    
+    {% if page_obj.has_next %}
+        <li><a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&type={{ current_type }}&sort={{ sort_order }}">&gt;</a></li>
+    {% endif %}
 </ul>
+{% endif %}
