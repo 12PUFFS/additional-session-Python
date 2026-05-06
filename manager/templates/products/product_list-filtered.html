@@ -1,1 +1,31 @@
-{% load static %} {% for product in products %} {% endfor %}
+{% load static %}
+
+<ul class='product_list container'>
+    {% for item in products|slice:":15" %} 
+    <li class='product_items'>
+        <div class='left_side'>
+            {% if item.photo and item.photo != 'отсутствует' and item.photo != 'не указано' and item.photo != 'нет' %}
+                <img class='is_img' src='{{item.photo.url}}' alt="фото товара">
+            {% else %}
+                <img class='empty_img' src='{% static 'picture.png' %}' alt="фото товара">
+            {% endif %}
+            <div class='desc'>
+               <p>{{item.type_of_material}} | {{item.material_names}}</p>
+               <p>Минимальное количество: {{ item.min_quantity }} шт</p>
+               <p>
+               {% for provider in supplier %}            
+                   {% if provider.materials_name_id == item.material_names_id %}
+                     {{ provider.providers_name.provider_name }}{% if not forloop.last %}, {% endif %}
+                   {% endif %}
+               {% endfor %}
+               </p>
+            </div>
+        </div>
+        <div class='counter'>
+            {{item.min_quantity}} {{item.units}}
+        </div>
+    </li>
+    {% empty %}
+    <li>Товары не найдены</li>
+    {% endfor %}
+</ul>
