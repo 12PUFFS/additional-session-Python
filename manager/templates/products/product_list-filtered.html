@@ -1,75 +1,83 @@
 {% load static %}
 
-<div class="results-info" style="margin-bottom: 15px;">
-    Выведено: {{ current_count }} из {{ total_count }}
-</div>
-
-{% for item in page_obj %}
-<div class="product-card {% if item.is_low_stock %}low-stock{% elif item.is_overstocked %}overstock{% endif %}">
-    <div class="checkbox-item">
-        <input type="checkbox" class="material-checkbox" value="{{ item.id }}">
-    </div>
-    
-    <div>
-        {% if item.photo %}
-            <img class="product-image" src="{{ item.photo.url }}" alt="фото">
-        {% else %}
-            <img class="product-image" src="{% static 'picture.png' %}" alt="нет фото">
-        {% endif %}
-    </div>
-    
-    <div class="product-info">
-        <div class="product-header">
-            <div class="product-title">
-                {{ item.type_of_material }} | {{ item.material_names }}
+<ul class='product_list'>
+    {% for item in page_obj %} 
+    <li class='product_items {% if item.is_low_stock %}low-stock{% elif item.is_overstocked %}overstock{% endif %}'>
+        <div class='left_side'>
+            <div class="photo-container">
+                {% if item.photo and item.photo.name %}
+                    <img class='is_img' src='{{ item.photo.url }}' alt="{{ item.material_names }}">
+                {% else %}
+                    <!-- ЗАГЛУШКА - SVG иконка -->
+                    <svg class='empty_img' xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                        <rect width="100" height="100" fill="#f0f0f0" stroke="#333" stroke-width="2"/>
+                        <circle cx="50" cy="35" r="12" fill="none" stroke="#666" stroke-width="2"/>
+                        <path d="M 20 75 L 40 55 L 55 70 L 70 50 L 90 75 Z" fill="none" stroke="#666" stroke-width="2"/>
+                    </svg>
+                {% endif %}
             </div>
-            <div class="stock-info">
-                Остаток: {{ item.quantity_in_stock }} шт
-            </div>
-        </div>
-        
-        <div class="product-details">
-            <p>Минимальное количество: {{ item.min_quantity }} шт</p>
-            
-            <div class="suppliers-list">
-                <strong>Поставщики:</strong> 
-                {% for link in supplier %}
-                    {% if link.materials_name_id == item.material_names_id %}
-                        {{ link.providers_name.provider_name }}{% if not forloop.last %}, {% endif %}
-                    {% endif %}
-                {% endfor %}
+            <div class='desc'>
+               <p style="font-size: 16px; margin-bottom: 10px;">
+                   <strong>{{ item.type_of_material }}</strong> | <strong>{{ item.material_names }}</strong>
+               </p>
+               <p><strong>Минимальное количество:</strong> {{ item.min_quantity }} шт</p>
+               <p><strong>Поставщики:</strong> 
+               {% for provider_link in supplier %}            
+                   {% if provider_link.materials_name_id == item.material_names_id %}
+                       {{ provider_link.providers_name.provider_name }}{% if not forloop.last %}, {% endif %}
+                   {% endif %}
+               {% empty %}
+                   Нет данных
+               {% endfor %}
+               </p>
             </div>
         </div>
-        
-        <div class="action-buttons">
-            <a href="{% url 'products:material_update' item.id %}" class="btn btn-warning">Редактировать</a>
-            <a href="{% url 'products:material_delete' item.id %}" class="btn btn-danger">Удалить</a>
+        <div class='counter'>
+          Остаток: {{ item.quantity_in_stock }} шт
         </div>
-    </div>
-</div>
-{% empty %}
-<div class="product-card">
-    <p>Товары не найдены</p>
-</div>
-{% endfor %}
-
-<!-- Pagination -->
-{% if page_obj.paginator.num_pages > 1 %}
-<ul class="pagination">
-    {% if page_obj.has_previous %}
-        <li><a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&type={{ current_type }}&sort={{ sort_order }}">&lt;</a></li>
-    {% endif %}
-    
-    {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-            <li><span class="active">{{ num }}</span></li>
-        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-            <li><a href="?page={{ num }}&search={{ search_query }}&type={{ current_type }}&sort={{ sort_order }}">{{ num }}</a></li>
-        {% endif %}
+    </li>
+    {% empty %}
+    <li class='product_items'>
+        <div class='desc'>
+           <p>Товары не найдены</p>
+        </div>
+    </li>
     {% endfor %}
-    
-    {% if page_obj.has_next %}
-        <li><a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&type={{ current_type }}&sort={{ sort_order }}">&gt;</a></li>
-    {% endif %}
 </ul>
+
+<!-- Пагинация -->
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="pagination-nav">
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_query|urlencode }}&type={{ current_type }}&sort={{ sort_order }}">
+                    &lt;
+                </a>
+            </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}&search={{ search_query|urlencode }}&type={{ current_type }}&sort={{ sort_order }}">
+                        {{ num }}
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_query|urlencode }}&type={{ current_type }}&sort={{ sort_order }}">
+                    &gt;
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
 {% endif %}

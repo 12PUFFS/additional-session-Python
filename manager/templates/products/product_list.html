@@ -4,128 +4,147 @@
 {% block extra_css %}
 {{ block.super }}
 <style>
-    .controls-top {
+    * {
+        font-family: Verdana, Geneva, sans-serif;
+        box-sizing: border-box;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .filter {
+        margin-bottom: 30px;
+    }
+    
+    .controls {
         display: flex;
         gap: 15px;
-        margin-bottom: 20px;
         flex-wrap: wrap;
     }
-    .search-box {
+    
+    .controls input[type="text"] {
         flex: 1;
+        min-width: 300px;
+        padding: 12px 15px;
+        border: 1px solid #333;
+        border-radius: 0;
+        font-size: 14px;
+        font-family: Verdana, Geneva, sans-serif;
+    }
+    
+    .controls select {
         min-width: 200px;
+        padding: 12px 15px;
+        border: 1px solid #333;
+        border-radius: 0;
+        font-size: 14px;
+        font-family: Verdana, Geneva, sans-serif;
+        background: white;
+        cursor: pointer;
     }
-    .search-box input {
-        width: 100%;
+    
+    .results-info {
+        margin: 20px 0;
         padding: 10px;
+        background: #f5f5f5;
         border: 1px solid #ddd;
-        border-radius: 4px;
+        font-weight: bold;
     }
-    .select-box {
-        min-width: 150px;
+    
+    .product_list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
     }
-    .select-box select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-    .product-card {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 15px;
+    
+    .product_items {
+        border: 1px solid #333;
+        padding: 20px;
+        margin-bottom: 20px;
         display: flex;
         gap: 20px;
         background: white;
     }
-    .product-card.low-stock {
+    
+    .product_items.low-stock {
         background-color: #f19292;
     }
-    .product-card.overstock {
+    
+    .product_items.overstock {
         background-color: #ffba01;
     }
-    .product-image {
+    
+    .left_side {
+        flex: 1;
+        display: flex;
+        gap: 20px;
+    }
+    
+    .is_img,
+    .empty_img {
         width: 100px;
         height: 100px;
         object-fit: cover;
-        border-radius: 4px;
+        border: 1px solid #333;
+        flex-shrink: 0;
     }
-    .product-info {
+    
+    .desc {
         flex: 1;
     }
-    .product-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
+    
+    .desc p {
+        margin: 8px 0;
+        font-size: 14px;
     }
-    .product-title {
-        font-size: 18px;
+    
+    .desc strong {
         font-weight: bold;
     }
-    .stock-info {
-        font-size: 16px;
+    
+    .counter {
+        text-align: right;
+        font-size: 14px;
+        font-weight: bold;
+        padding-top: 40px;
     }
-    .product-details p {
-        margin: 5px 0;
+    
+    .pagination-nav {
+        margin-top: 30px;
     }
-    .suppliers-list {
-        margin-top: 10px;
-    }
-    .action-buttons {
-        margin-top: 15px;
-    }
-    .btn {
-        padding: 8px 15px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-    }
-    .btn-primary {
-        background: #007bff;
-        color: white;
-    }
-    .btn-danger {
-        background: #dc3545;
-        color: white;
-    }
-    .btn-warning {
-        background: #ffc107;
-        color: #000;
-    }
-    .checkbox-item {
-        margin: 5px 0;
-    }
-    .bulk-actions {
-        margin: 20px 0;
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 4px;
-        display: none;
-    }
-    .bulk-actions.show {
-        display: block;
-    }
+    
     .pagination {
         display: flex;
         justify-content: flex-end;
         gap: 5px;
         list-style: none;
         padding: 0;
+        margin: 0;
     }
-    .pagination a, .pagination span {
+    
+    .pagination .page-link {
         padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
+        border: 1px solid #333;
         text-decoration: none;
         color: #333;
+        cursor: pointer;
     }
-    .pagination .active {
-        background: #007bff;
+    
+    .pagination .page-link:hover {
+        background: #f0f0f0;
+    }
+    
+    .pagination .active .page-link {
+        background: #333;
         color: white;
-        border-color: #007bff;
+    }
+    
+    .actions a {
+        margin-left: 10px;
+        font-size: 12px;
     }
 </style>
 {% endblock %}
@@ -133,148 +152,82 @@
 {% block title %}Список товаров{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>Список товаров</h1>
-    
-    {% if user.is_staff or user.is_superuser %}
-    <!-- Controls -->
-    <div class="controls-top">
-        <div class="search-box">
-            <input type="text" id="search" placeholder="Введите для поиска" value="{{ search_query }}">
-        </div>
-        <div class="select-box">
-            <select id="sort">
-                <option value="">Сортировка</option>
-                <option value="name_asc" {% if sort_order == 'name_asc' %}selected{% endif %}>Название (А-Я)</option>
-                <option value="name_desc" {% if sort_order == 'name_desc' %}selected{% endif %}>Название (Я-А)</option>
-                <option value="stock_asc" {% if sort_order == 'stock_asc' %}selected{% endif %}>Остаток (+)</option>
-                <option value="stock_desc" {% if sort_order == 'stock_desc' %}selected{% endif %}>Остаток (-)</option>
-                <option value="price_asc" {% if sort_order == 'price_asc' %}selected{% endif %}>Цена (+)</option>
-                <option value="price_desc" {% if sort_order == 'price_desc' %}selected{% endif %}>Цена (-)</option>
-            </select>
-        </div>
-        <div class="select-box">
-            <select id="type_filter">
-                <option value="all">Фильтрация</option>
-                {% for t in types %}
-                    <option value="{{ t.id }}" {% if current_type == t.id|stringformat:"s" %}selected{% endif %}>
-                        {{ t.type_name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="select-box">
-            <a href="{% url 'products:material_create' %}" class="btn btn-primary">Добавить материал</a>
+    <div class="page-header">
+        <div class="page-header__inner">
+            <h1>Список товаров</h1>
+            <p>Управление ассортиментом и минимальными количествами</p>
         </div>
     </div>
-    
-    <!-- Bulk actions -->
-    <div id="bulk-actions" class="bulk-actions">
-        <form method="POST" action="{% url 'products:update_min_quantity' %}">
-            {% csrf_token %}
-            <div id="selected-materials"></div>
-            <label>Изменить минимальное количество на: </label>
-            <input type="number" name="min_quantity" id="bulk-min-quantity" min="0">
-            <button type="submit" class="btn btn-primary">Применить</button>
-        </form>
-    </div>
-    {% endif %}
-    
-    <div id="products-container">
-        {% include 'products/product_list-filtered.html' %}
-    </div>
-</div>
 
-<script src='https://code.jquery.com/jquery-3.6.0.min.js'></script>
-<script>
-    $(document).ready(function(){
-        let debounceTimer;
-        let selectedMaterials = [];
-
-        function updateProducts(pushState = true){
-            const search = $('#search').val(); 
-            const type = $('#type_filter').val();
-            const sort = $('#sort').val();
-
-            const params = new URLSearchParams({
-                search: search,
-                type: type,
-                sort: sort,
-                page: 1
-            });
-
-            $.ajax({
-                url: window.location.pathname + '?' + params.toString(),
-                type: 'GET',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                success: function(data){
-                    const newContent = $(data).find('#products-container').html();
-                    $('#products-container').html(newContent);
+    <!-- Фильтр поиска -->
+    <div class='filter container'> 
+        {% if user.is_staff or user.is_superuser %}
+            <form id="filter-form" method="GET" action="">
+                <div class='controls'>
+                    <input type='text' id="search" name="search" placeholder='Введите для поиска' value='{{ search_query }}'/>
                     
-                    if (pushState) {
-                        const newUrl = window.location.pathname + '?' + params.toString();
-                        window.history.pushState({path: newUrl}, '', newUrl);
-                    }
-                },
-                error: function(xhr, status, error){
-                    console.error('Ошибка:', error);
-                }
-            });
-        }
+                    <select id='sort' name="sort">
+                        <option value=''>Сортировка</option>
+                        <option value='name_asc' {% if sort_order == 'name_asc' %}selected{% endif %}>Название (А-Я)</option>
+                        <option value='name_desc' {% if sort_order == 'name_desc' %}selected{% endif %}>Название (Я-А)</option>
+                        <option value='stock_asc' {% if sort_order == 'stock_asc' %}selected{% endif %}>Остаток (+)</option>
+                        <option value='stock_desc' {% if sort_order == 'stock_desc' %}selected{% endif %}>Остаток (-)</option>
+                        <option value='price_asc' {% if sort_order == 'price_asc' %}selected{% endif %}>Цена (+)</option>
+                        <option value='price_desc' {% if sort_order == 'price_desc' %}selected{% endif %}>Цена (-)</option>
+                    </select>
 
-        // Search
-        $('#search').on('input', function(){
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(updateProducts, 500);
-        });
-
-        // Sort and filter
-        $('#sort, #type_filter').on('change', function(){
-            updateProducts();
-        });
-        
-        // Pagination
-        $(document).on('click', '.pagination a', function(e){
-            e.preventDefault();
-            const url = $(this).attr('href');
-            if (url) {
-                $.ajax({
-                    url: url,
-                    type: 'GET',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                    success: function(data){
-                        const newContent = $(data).find('#products-container').html();
-                        $('#products-container').html(newContent);
-                        window.history.pushState({path: url}, '', url);
-                    }
-                });
-            }
-        });
-        
-        // Bulk selection
-        $(document).on('change', '.material-checkbox', function(){
-            const id = $(this).val();
-            if ($(this).is(':checked')) {
-                selectedMaterials.push(id);
-            } else {
-                selectedMaterials = selectedMaterials.filter(m => m !== id);
-            }
+                    <select id='type_filter' name="type">
+                        <option value='all'>Фильтрация</option>
+                        {% for t in types %}
+                            <option value='{{ t.id }}' {% if current_type == t.id|stringformat:"s" %}selected{% endif %}>
+                                {{ t.type_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
             
-            updateBulkActions();
-        });
-        
-        function updateBulkActions() {
-            if (selectedMaterials.length > 0) {
-                $('#bulk-actions').addClass('show');
-                let inputs = '';
-                selectedMaterials.forEach(id => {
-                    inputs += `<input type="hidden" name="material_ids" value="${id}">`;
-                });
-                $('#selected-materials').html(inputs);
-            } else {
-                $('#bulk-actions').removeClass('show');
+            <div class="results-info">
+                Выведено: {{ current_count }} из {{ total_count }}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Контейнер для списка товаров -->
+    <div class="container">
+        <div id='products-container'>
+            {% include 'products/product_list-filtered.html' %}
+        </div>
+    </div>
+
+    <script src='https://code.jquery.com/jquery-3.6.0.min.js'></script>
+    <script>
+        $(document).ready(function(){
+            let debounceTimer;
+
+            // Функция отправки формы
+            function submitFilter() {
+                $('#filter-form').submit();
             }
-        }
-    });
-</script>
+
+            // Поиск с задержкой
+            $('#search').on('input', function(){
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(submitFilter, 500);
+            });
+
+            // Сортировка и фильтр типа
+            $('#sort, #type_filter').on('change', function(){
+                submitFilter();
+            });
+
+            // Пагинация
+            $('.pagination a').on('click', function(e){
+                e.preventDefault();
+                const url = $(this).attr('href');
+                window.location.href = url;
+            });
+        });
+    </script>
+
 {% endblock %}
